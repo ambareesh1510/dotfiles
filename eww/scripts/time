@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# Get the current date and time in YYYY MM DD HH MM format
+year=$(date +"%Y")
+month=$(date +"%m")
+day=$(date +"%d")
+hour=$(date +"%H")
+minute=$(date +"%M")
+second=$(date +"%S")
+
+
+# Function to convert a number to binary, pad it to the specified length, and replace 1 with + and 0 with -
+convert_to_binary_plus_minus() {
+    local number=$1
+    local bits=$2
+    binary_string=$(echo "obase=2; $number" | bc | awk -v len=$bits '{printf "%0" len "s", $0}')
+    echo "$binary_string" | sed 's/1/█/g; s/0/ /g'
+}
+
+time_bin() {
+    # Convert each field to binary and replace 1 with + and 0 with -
+    year_binary=$(convert_to_binary_plus_minus "$year" 12)
+    month_binary=$(convert_to_binary_plus_minus "$month" 4)
+    day_binary=$(convert_to_binary_plus_minus "$day" 5)
+    hour_binary=$(convert_to_binary_plus_minus "$hour" 5)
+    minute_binary=$(convert_to_binary_plus_minus "$minute" 6)
+    second_binary=$(convert_to_binary_plus_minus "$second" 6)
+
+    #echo "║$year_binary┊$month_binary┊$day_binary┊$hour_binary┊$minute_binary┊$second_binary║"
+    echo "$year_binary┊$month_binary┊$day_binary┊$hour_binary┊$minute_binary┊$second_binary"
+}
+
+time_bin && exit

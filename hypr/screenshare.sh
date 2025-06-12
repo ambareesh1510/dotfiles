@@ -1,0 +1,7 @@
+#!/bin/bash
+# Import the WAYLAND_DISPLAY env var from sway into the systemd user session.
+dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=Hyprland
+
+# Stop any services that are running, so that they receive the new env var when they restart.
+systemctl --user stop pipewire pipewire-media-session xdg-desktop-portal xdg-desktop-portal-hyprland
+systemctl --user start pipewire-media-session

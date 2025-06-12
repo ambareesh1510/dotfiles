@@ -1,0 +1,421 @@
+(defvar eww "/usr/bin/eww")
+
+(defpoll hms :interval "1s"
+              :initial "time"  ; optional, defaults to poll at startup
+  `date +%H:%M:%S`)
+
+(defpoll ymd :interval "1s"
+              :initial "date"  ; optional, defaults to poll at startup
+  `date "+%a %Y-%m-%d"`)
+
+(defpoll bat
+  :interval "1s"
+  :initial "bat"
+  `echo "$(cat /sys/class/power_supply/BAT0/capacity)% ($(cat /sys/class/power_supply/BAT0/status))"`
+)
+(defwidget workspaces []
+  (box :space-evenly false
+    (label :text "${workspaces}${current_workspace}" :visible false)
+    (for workspace in workspaces
+      (box
+        :space-evenly false
+        :spacing 0
+        :class "workspace-entry ${workspace.id == current_workspace ? "current" : ""} ${workspace.windows > 0 ? "occupied" : "empty"}"
+        (label :unindent false :text {workspace.id == current_workspace ? "${workspace.id}* " : workspace.windows > 0 ? "${workspace.id}- " : "${workspace.id}  "})
+      )
+    )
+  )
+)
+
+;; listens
+(deflisten window :initial "..." "sh ~/.config/eww/scripts/get-window-title")
+(deflisten workspaces :initial "[]" "bash ~/.config/eww/scripts/get-workspaces")
+(deflisten current_workspace :initial "1" "bash ~/.config/eww/scripts/get-active-workspace")
+
+
+(defwindow example
+  :monitor "[1, 0]"
+  :geometry (geometry :x "0%"
+                     :y "00px"
+                     :width "100%"
+                     :height "10px"
+                     :anchor "top center")
+  :stacking "fg"
+  ; :reserve (struts :distance "20px" :side "bottom")
+  :windowtype "dock"
+  ; :wm-ignore false
+  :exclusive true
+  (newbar)
+)
+
+(defwidget newbar []
+  (centerbox
+    :orientation "h"
+    :space-evenly false
+    :class "bar"
+    (box
+      :halign "start"
+      :space-evenly false
+      :spacing 8
+      (workspaces)
+    )
+    (box
+      :halign "center"
+      :space-evenly false
+      :spacing 8
+      hms
+    )
+    (box
+      :halign "end"
+      :space-evenly false
+      :spacing 0
+      ymd
+      (label :unindent false :text " | ")
+      bat
+    )
+  )
+)
+
+
+(defwindow example2
+  :monitor "[1, 0]"
+  :hexpand false
+  :vexpand false
+  :geometry (geometry :x 0 :y 0 :width "100%" :height "0px" :anchor "top center")
+  :stacking "fg"
+  :exclusive true
+  :reserve (struts :distance "0px" :side "top")
+  (bar)
+)
+
+(defwidget bar []
+  (centerbox
+    :orientation "h"
+    :space-evenly false
+    :class "bar"
+    ; :geometry (geometry :x 0 :y 0 :width "100%" :height "5px" :anchor "top center")
+    (box
+      :halign "start"
+      :space-evenly false
+      :spacing 8
+      (bat)
+    )
+    (box
+      :hexpand false
+      (window_w)
+    )
+    ;; (box
+    ;;   :hexpand false
+    ;;   (window_w)
+    ;; )
+    (box
+      :halign "end"
+      :spacing 8
+      :space-evenly false
+      (tray)
+      (volume)
+      (brightness)
+      (network)
+      (datetime)
+    )
+  )
+)
+
+(defwidget icon-module [icon ?class ?visible]
+  (box
+    :class "${class} icon-module"
+    :orientation "h"
+    :halign "end"
+    :space-evenly false
+    :spacing 4
+    :visible {visible ?: true} ; because the argument is optional
+    (label :class "icon-module__icon" :text "${icon}")
+    (children)
+  )
+)
+
+(defwidget info-module [?class ?visible]
+  (box
+    :class "${class} info-module"
+    :orientation "h"
+    :halign "end"
+    :space-evenly false
+    :spacing 4
+    :visible {visible ?: true} ; because the argument is optional
+    (children)
+  )
+)
+
+(defwidget bat []
+  (icon-module :class "battery" :icon battery)
+)
+
+(defwidget brightness []
+  (eventbox
+    :class "brightness icon-module"
+    :orientation "h"
+    :halign "end"
+    :space-evenly false
+    :onhover `${eww} update brightness=true`
+    :onhoverlost `${eww} update brightness=false`
+    (box
+      :orientation "h"
+      :space-evenly false
+      :hexpand "true"
+      :class "brightnessslider"
+
+      (box
+        :class "button"
+        ""
+      )
+      (icon-module :class "brightness" :icon "󰖨"
+        (revealer
+          :transition "slideright"
+          :reveal "${!brightness}"
+          :duration "500ms"
+          (label 
+            :text "${round(brightness_level / 20.47, 0)}%"
+          )
+        )
+      )
+
+      (revealer
+        :transition "slideleft"
+        :reveal brightness
+        :duration "300ms"
+
+        (scale
+          :class "sliderbar"
+          :tooltip "${round(brightness_level / 20.47, 0)}%"
+          :hexpand true
+          :width 100
+          :min 0
+          :max 2047
+          :value brightness_level
+          :onchange "brightnessctl set {}; ${eww} update brightness_level=$(brightnessctl g)"
+        )
+      )
+    )
+  )
+)
+(defvar brightness false)
+(defvar brightness_level 2047)
+
+
+(defwidget date []
+  (info-module :class "date"
+    (label :text date_poll)
+  )
+)
+
+(defwidget datetime []
+  (info-module :class "date"
+    (label :text datetime)
+  )
+)
+
+(defwidget network []
+  (eventbox
+    :class "network icon-module"
+    :orientation "h"
+    :halign "end"
+    :space-evenly false
+    :spacing 4
+    :onclick `kitty nmtui &`
+    (label :class "icon-module__icon" :text {network_poll ? "󰖪" : ""})
+  )
+)
+
+(defwidget powerr []
+  (eventbox
+    :class "power icon-module"
+    :orientation "h"
+    :halign "end"
+    :space-evenly false
+    :spacing 4
+    :onclick `wlogout &`
+    (label :class "icon-module__icon" :text "󰣇")
+  )
+)
+
+(defwidget power []
+  (eventbox
+    :class "power icon-module"
+    :orientation "h"
+    :halign "end"
+    :space-evenly false
+    :onhover `${eww} update power=true`
+    :onhoverlost `${eww} update power=false`
+    (box
+      :orientation "h"
+      :space-evenly false
+      :hexpand "true"
+      :class "powermenu"
+
+      (box
+        :class "button arch"
+        "󰣇 "
+      )
+
+      (revealer
+        :transition "slideright"
+        :reveal power
+        :duration "300ms"
+        :space-evenly true
+        (box
+          :orientation "h"
+          :space-evenly false
+
+          (button
+            :class "button lock"
+            :tooltip "Lock"
+            :onclick "$HOME/.config/swaylock/lock.sh > /dev/null"
+            " "
+          )
+
+          (button
+            :class "button logout"
+            :tooltip "Logout"
+            :onclick "hyprctl dispatch exit"
+            "󰍃 "
+          )
+
+          (button
+            :class "button suspend"
+            :tooltip "Suspend"
+            :onclick "systemctl suspend"
+            " " 
+          )
+
+          (button
+            :class "button hibernate"
+            :tooltip "Hibernate"
+            :onclick ""
+            "⏼ " 
+          )
+
+          (button
+            :class "button reboot"
+            :tooltip "Reboot"
+            :onclick "reboot"
+            " "
+          )
+
+          (button
+            :class "button shutdown"
+            :tooltip "Shutdown"
+            :onclick "shutdown now"
+            "⏻ "
+          )
+        )
+      )
+    )
+  )
+)
+(defvar power false)
+
+(defwidget time []
+  (info-module :class "time"
+    (label :text time_poll)
+  )
+)
+
+(defwidget tray []
+  (eventbox
+    :class "tray icon-module"
+    :orientation "h"
+    :halign "end"
+    :space-evenly false
+    :checked tray
+    :onclick "${eww} update tray=${!tray}"
+    (box
+      :orientation "h"
+      :space-evenly false
+      :spacing 8
+      :hexpand "true"
+      (revealer
+        :transition "slideleft"
+        :reveal tray
+        :duration "300ms"
+
+        (systray 
+          :icon-size 16
+          :spacing 6
+        )
+      )
+      (box
+        "󱊔 "
+        
+      )
+    )
+  )
+)
+
+(defvar button_active true)
+(defvar tray true)
+
+(defwidget volume []
+  (eventbox
+    :class "volume icon-module"
+    :orientation "h"
+    :halign "end"
+    :space-evenly false
+    :onhover `${eww} update volume=true`
+    :onhoverlost `${eww} update volume=false`
+    (box
+      :orientation "h"
+      :space-evenly false
+      :hexpand "true"
+      :class "volumeslider"
+
+      (icon-module :class "volume" :icon "󰕾"
+        (revealer
+          :transition "slideright"
+          :reveal "${!volume}"
+          :duration "500ms"
+          (label 
+            :text "${volume_level}%"
+          )
+        )
+      )
+
+      (revealer
+        :transition "slideleft"
+        :reveal volume
+        :duration "300ms"
+
+        (scale
+          :class "sliderbar"
+          :tooltip "${volume_level}%"
+          :hexpand true
+          :width 100
+          :min 0
+          :max 100
+          :value volume_level
+          :onchange "pactl set-sink-volume @DEFAULT_SINK@ {}%; ${eww} update volume_level=$(scripts/getvol)"
+        )
+      )
+    )
+  )
+)
+(defvar volume false)
+(defpoll volume_level :interval "1s" "scripts/getvol")
+
+(defwidget window_w []
+  (label 
+    :text "${window}"
+    :limit-with 10
+    :show-truncated false
+  )
+)
+
+
+;; polls
+(defpoll battery	        :interval "1s"	"scripts/battery percent")
+(defpoll datetime           :interval "1s"	"scripts/time")
+(defpoll battery-capacity	:interval "1s"	"scripts/battery percent")
+
+(defpoll time_poll :interval "1s" "date '+%l:%M %p'")
+(defpoll date_poll :interval "1m" "date '+%a %b %d'")
+
+(defpoll network_poll :interval "2s" "scripts/network")

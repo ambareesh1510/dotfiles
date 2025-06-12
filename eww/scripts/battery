@@ -1,0 +1,27 @@
+#!/bin/sh
+
+D2B=({0..1}{0..1}{0..1}{0..1}{0..1}{0..1}{0..1}{0..1})
+
+bat=/sys/class/power_supply/BAT0/
+per="$(cat "$bat/capacity")"
+
+percent() {
+    # Read the battery percentage
+    battery_percentage=$(cat /sys/class/power_supply/BAT0/capacity)
+
+    # Convert battery percentage to binary
+    binary_string=$(echo "obase=2; $battery_percentage" | bc)
+
+    # Replace 1 with + and 0 with -
+    # converted_string=$(echo "$binary_string" | tr '1' '*' | tr '0' ' ')
+    # echo "║$binary_string║" | sed 's/1/█/g; s/0/ /g'
+    # binary_string=$(echo "obase=2; $battery_percentage" | bc | awk -v len=$bits '{printf "%0" len "s", $0}')
+    echo "$binary_string" | sed 's/1/█/g; s/0/ /g'
+
+    # Output the result
+    # echo "[$converted_string]"
+}
+
+
+[ "$1" = "percent" ] && percent && exit
+exit

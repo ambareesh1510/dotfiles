@@ -1,0 +1,112 @@
+$bg:           rgba(#ffffff, 1.0);
+$fg:           rgba(#000000, 1.0);
+
+* {
+  all: unset;
+}
+
+window {
+  background: $bg;
+}
+
+.example {
+  background: $bg;
+  color: $fg;
+  font-family: "Cascadia Code";
+  font-weight: bold;
+  font-size: 12px;
+  margin: 0px 5px;
+}
+
+/*
+.icon-module {
+  // margin: 0 5px;
+  padding: 0 5px;
+  & > &__icon {
+    padding-right: 5px;
+    margin-right: 4px;
+  }
+}
+
+
+.workspace-entry {
+  font-size: 12px;
+
+  // button {
+  //   margin: 0px 3px;
+  // }
+  &.occupied {
+    color: $white;
+  }
+
+  &.urgent {
+    color: $red; 
+  }
+
+  &.empty {
+    padding-top: 2px;
+    color: $foreground-alt;
+    font-size: 10px;
+  }
+
+  &.current {
+    padding-top: 0;
+    color: $white;
+    font-size: 14px;
+  }
+}
+
+.powermenu {
+  font-family: feather;
+  font-size: 1.5em;
+  font-weight: bold;
+  border-right: 1px;
+  border-style: dotted;
+  border-color: $grey;
+}
+.button {
+  padding-left: .4em;
+  &.arch {
+    color: $blue;
+  }
+  &.lock{
+    color: $red;
+  }
+  &.logout{
+    padding-right: 0.1em;
+    color: $orange;
+  }
+  &.suspend{
+    color: $yellow;
+  }
+  &.hibernate {
+    color: $green;
+  }
+  &.reboot{
+    padding-right: 0.1em;
+    color: $blue;
+  }
+  &.shutdown {
+    color: $cyan;
+  }
+}
+
+.sliderbar trough highlight {
+  background: $white;
+  border-radius: 4px;
+}
+
+scale trough {
+  background-color: $grey;
+  border-radius: 9px;
+  min-height: 2px;
+  min-width: 70px;
+  margin: 0px 10px 0px 5px;
+}
+
+slider {
+  // border-radius: 10px;
+  // background-color: #D8DEE9;
+  margin: -7px -7px -7px -7px;
+}
+*/
