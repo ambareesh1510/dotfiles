@@ -13,6 +13,13 @@
   :initial "bat"
   `echo "$(cat /sys/class/power_supply/BAT0/capacity)% ($(cat /sys/class/power_supply/BAT0/status))"`
 )
+
+(defpoll vol
+  :interval "1s"
+  :initial "vol"
+  `pactl get-sink-volume @DEFAULT_SINK@ | grep -o "[0-9]*%" | awk 'NR==1 {L=$0} NR==2 {R=$0; print "L " L " / R " R}'`
+)
+
 (defwidget workspaces []
   (box :space-evenly false
     (label :text "${workspaces}${current_workspace}" :visible false)
@@ -22,6 +29,8 @@
         :spacing 0
         :class "workspace-entry ${workspace.id == current_workspace ? "current" : ""} ${workspace.windows > 0 ? "occupied" : "empty"}"
         (label :unindent false :text {workspace.id == current_workspace ? "${workspace.id}* " : workspace.windows > 0 ? "${workspace.id}- " : "${workspace.id}  "})
+        ; (label :unindent false :text {workspace.id == current_workspace ? "${workspace.id}* " : workspace.windows > 0 ? "${workspace.id}· " : "${workspace.id}  "})
+        ; (label :unindent false :text {workspace.id == current_workspace ? "[${workspace.id}] " : workspace.windows > 0 ? "<${workspace.id}> " : " ${workspace.id}  "})
       )
     )
   )
@@ -70,6 +79,8 @@
       :space-evenly false
       :spacing 0
       ymd
+      (label :unindent false :text " | ")
+      vol
       (label :unindent false :text " | ")
       bat
     )

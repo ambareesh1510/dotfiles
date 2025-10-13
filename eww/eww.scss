@@ -1,4 +1,5 @@
-$bg:           rgba(#ffffff, 1.0);
+$bg:           rgba(#ffffff, 0.0);
+// $fg:           rgba(#000000, 1.0);
 $fg:           rgba(#000000, 1.0);
 
 * {
@@ -12,8 +13,10 @@ window {
 .example {
   background: $bg;
   color: $fg;
-  font-family: "Cascadia Code";
-  font-weight: bold;
+  // font-family: "Cascadia Code";
+  // font-family: "JetBrains Mono";
+  font-family: "Source Code Pro Semibold";
+  // font-family: "Iosevka";
   font-size: 12px;
   margin: 0px 5px;
 }
