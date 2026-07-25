@@ -1,7 +1,7 @@
+@theme "dark2026"
 configuration {
 /*	modes: "window,drun,run,ssh";*/
-// font: "JetBrains Mono 12";
-font: "Monaspace Neon 12";
+/* font: "Monaspace Neon 12"; */
 /*	location: 0;*/
 /*	yoffset: 0;*/
 /*	xoffset: 0;*/
